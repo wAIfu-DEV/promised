@@ -19,7 +19,7 @@ type Promise[T any] struct {
 }
 
 func New[T any](constrRoutine PromiseConstructor[T]) *Promise[T] {
-	var channel chan PromiseResult[T] = make(chan PromiseResult[T])
+	var channel chan PromiseResult[T] = make(chan PromiseResult[T], 1)
 	var once sync.Once
 
 	go constrRoutine(func(value T) {
@@ -40,4 +40,8 @@ func New[T any](constrRoutine PromiseConstructor[T]) *Promise[T] {
 func (p *Promise[T]) Await() (T, error) {
 	result := <-p.ch
 	return result.Value, result.Error
+}
+
+func (p *Promise[T]) IsFinished() bool {
+	return len(p.ch) > 0
 }
